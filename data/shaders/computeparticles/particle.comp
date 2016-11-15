@@ -55,14 +55,52 @@ void main()
 		return;
 
     // Read position and velocity
-		vec2 vPos = particlesA[index].pos.xy;
+	vec2 vPos = particlesA[index].pos.xy;
     vec2 vVel = particlesA[index].vel.xy;
 
-		// clamp velocity for a more pleasing simulation.
-		vVel = normalize(vVel) * clamp(length(vVel), 0.0, 0.1);
+	vec2 newVel = vVel;
+	vec2 center = vec2(0.0f, 0.0f);
+	vec2 separate = vec2(0.0f, 0.0f);
+	vec2 cohesion = vec2(0.0f, 0.0f);
+	int neighborCount1 = 0;
+	int neighborCount3 = 0;
 
-		// kinematic update
-		vPos += vVel * ubo.deltaT;
+	for (int j = 0; j < ubo.particleCount; j++) {
+		if (index == j) continue;
+		float distance = distance(vPos, particlesA[j].pos.xy);
+		if (distance < ubo.rule1Distance) {
+			// Rule 1: boids fly towards their local perceived center of mass, which excludes themselves
+			center += particlesA[i].pos.xy;
+			neighborCount1 += 1;
+		}
+
+		// Rule 2: boids try to stay a distance d away from each other
+		if (distance < ubo.rule2Distance) {
+			separate -= (particlesA[j].pos.xy - vPos);
+		}
+
+		if (distance < ubo.rule3Distance) {
+			// Rule 3: boids try to match the speed of surrounding boids
+			cohesion += particlesA[j].vel.xy;
+			neighborCount3 += 1;
+		}
+	}
+	if (neighborCount1) {
+		center /= float(neighborCount1);
+		newVel += (center - vPos) * rule1Scale;
+	}
+	if (neighborCount3) {
+		cohesion /= float(neighborCount3);
+		newVel += (cohesion - vVel) * rule3Scale;
+	}
+	newVel += separate * rule2Scale;
+	vVel = newVel;
+
+	// clamp velocity for a more pleasing simulation.
+	vVel = normalize(vVel) * clamp(length(vVel), 0.0, 0.1);
+
+	// kinematic update
+	vPos += vVel * ubo.deltaT;
 
     // Wrap around boundary
 		if (vPos.x < -1.0) vPos.x = 1.0;
