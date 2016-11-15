@@ -4,7 +4,7 @@ Vulkan Flocking: compute and shading in one pipeline!
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 6**
 
 * Nischal K N
-  Windows 8.1, i7-5500U @ 2.40 GHz 16GB, GTX 920M 3839MB (Personal)
+* Windows 8.1, i7-5500U @ 2.40 GHz 16GB, GTX 920M 3839MB (Personal)
 
 ### OUTPUT
 ![](Images/output.gif)
